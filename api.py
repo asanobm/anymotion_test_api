@@ -10,6 +10,8 @@ load_dotenv()
 
 app = Flask(__name__)
 
+teaching_videos = []
+
 ANYMOTION_CLIENT_ID = os.getenv('ANYMOTION_CLIENT_ID')
 ANYMOTION_CLIENT_SECRET = os.getenv('ANYMOTION_CLIENT_SECRET')
 
@@ -36,17 +38,21 @@ def get_teaching_videos():
     ls = glob.glob('./.sample_videos/*')
     mp4 = [file for file in ls if file.endswith('.mp4')]
 
-    files = []
-
     for file in mp4:
-        files.append({
+        teaching_videos.append({
             "title": file.title().split("/")[2].split('.Mp4')[0],
             "path": file
         })
 
-    data = pd.DataFrame(files)
+    data = pd.DataFrame(teaching_videos)
     print(data)
     return res_from_dataframe(data)
+
+
+@app.route('/download_teaching_video')
+def download_teaching_video():
+    path = request.args.get('path')
+    return send_file(path)
 
 
 @app.route('/movies')
@@ -85,10 +91,10 @@ def draw():
 @app.route('/download_drawing')
 def download_drawing():
     drawing_id = request.args.get('drawing_id')
-    os.remove("./.downloads/current.mp4")
-    data = anymotion.download(drawing_id, path="./.downloads/current.mp4")
+    os.remove(".downloads/current.mp4")
+    data = anymotion.download(drawing_id, path=".downloads/current.mp4")
     print(data)
-    return send_file("./downloads/current.mp4")
+    return send_file(".downloads/current.mp4")
 
 
 if __name__ == "__main__":
